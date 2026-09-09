@@ -1,6 +1,6 @@
 # XivBar
 
-A Windower addon that adds compliments **XivParty's assets**.
+A Windower addon that compliments **XivParty's assets**.
 XivBar is designed as an expansion for [XivParty](https://github.com/Tylas11/XivParty) and it's suggested to be used alongside it. 
 This addon highly borrows from the xivparty plugin so shares the same commands and visual style. 
 
