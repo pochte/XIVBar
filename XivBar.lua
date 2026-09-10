@@ -1,18 +1,17 @@
 -- XivBar.lua
--- Commands: /xivbar setup | show | hide | reset
+-- Commands: /xivbar setup | show | hide | reset | skin ffxi|ffxiv
 _addon.name='XivBar'
 _addon.author='XIVParty is required for this to work. Additional coding by Ulli'
-_addon.version='1.0.0'
+_addon.version='1.1.0'
 _addon.commands={'xivbar'}
 require('tables')
 local config=require('config')
 local socket=require('socket')
 local packets=require('packets')
 local XivPanel=require('XivPanel')
---put your actual xivparty folder here if you need to.
-local xiv_assets=windower.addon_path..'assets'
 -- Settings/Default Pos
 local defaults=T{
+    skin='ffxi', -- 'ffxi' or 'ffxiv'
     pet=T{pos={x=18,y=525},scale=0.85,image_layout=T{
             bg_top={x=1,y=-6,scale=1.0},bg_mid={x=1,y=15,scale=1.0},bg_bottom={x=1,y=27,scale=1.0},
             hp_bg={x=20,y=1,scale=1.0},hp_fg={x=20,y=1,scale=0.92},hp_fill={x=30,y=0,scale=0.92},
@@ -28,6 +27,14 @@ local defaults=T{
             hp_bg={x=20,y=1,scale=1.0},hp_fill={x=30,y=0,scale=0.92},hp_fg={x=20,y=1,scale=0.92},
             hp_glow={x=30,y=0,scale=0.92},hp_glow_sides={x=30,y=-1,scale=1.0},},},}
 local settings=config.load(defaults)
+settings.skin=settings.skin or defaults.skin
+-- Asset paths
+-- base_assets holds the shared bar-part images (Bar.png, BarBG.png, BarFG.png, BarGlow.png, BarGlowSides.png, Hover.png)
+-- skin_assets holds the skin-specific background images (BgTop.png, BgMid.png, BgBottom.png), in assets/ffxi/ or assets/ffxiv/
+local base_assets=windower.addon_path..'assets\\'
+local function skin_assets_path()
+    return base_assets..settings.skin..'\\'
+end
 local function fill_defaults(section_name)
 settings[section_name]=settings[section_name] or T{}
 local s,d=settings[section_name],defaults[section_name]
@@ -62,9 +69,9 @@ local function enemy_position_text(panel,s)
     panel.value_text.hp:pos(x+155*s,y+28*s)
 end
 -- Panels
-local pet_panel=XivPanel.new{assets=xiv_assets,settings=settings.pet,defaults=defaults.pet,stats={'hp','mp'},position_text=pet_position_text,preview={name='TEST PET',hp={text='75%',percent=69},mp={text='50%',percent=67}}}
-local enemy_panel=XivPanel.new{assets=xiv_assets,settings=settings.enemy,defaults=defaults.enemy,stats={'hp'},value_align_right=false,position_text=enemy_position_text,preview={name='TEST ENEMY',hp={text='69%',percent=69}}}
-local subtarget_panel=XivPanel.new{assets=xiv_assets,settings=settings.subtarget,defaults=defaults.subtarget,stats={'hp'},value_align_right=false,position_text=enemy_position_text,preview={name='TEST SUBTARGET',hp={text='42%',percent=42}}}
+local pet_panel=XivPanel.new{assets=base_assets,skin_assets=skin_assets_path(),settings=settings.pet,defaults=defaults.pet,stats={'hp','mp'},position_text=pet_position_text,preview={name='TEST PET',hp={text='75%',percent=69},mp={text='50%',percent=67}}}
+local enemy_panel=XivPanel.new{assets=base_assets,skin_assets=skin_assets_path(),settings=settings.enemy,defaults=defaults.enemy,stats={'hp'},value_align_right=false,position_text=enemy_position_text,preview={name='TEST ENEMY',hp={text='69%',percent=69}}}
+local subtarget_panel=XivPanel.new{assets=base_assets,skin_assets=skin_assets_path(),settings=settings.subtarget,defaults=defaults.subtarget,stats={'hp'},value_align_right=false,position_text=enemy_position_text,preview={name='TEST SUBTARGET',hp={text='42%',percent=42}}}
 -- State
 local setup_mode=false
 local last_update,update_interval=0,0.1
@@ -219,8 +226,22 @@ local command=args[1] and args[1]:lower() or ''
             update_pet();update_enemy();update_subtarget()
         end
         windower.add_to_chat(207,'[XivBar] All bars reset.')
+    elseif command=='skin' then
+local choice=args[2] and args[2]:lower()
+        if choice=='ffxi' or choice=='ffxiv' then
+            if settings.skin==choice then
+                windower.add_to_chat(207,'[XivBar] Skin is already set to '..choice..'.')
+            else
+                settings.skin=choice
+                save_settings()
+                windower.add_to_chat(207,'[XivBar] Skin set to '..choice..'. Reloading...')
+                windower.send_command('lua reload xivbar')
+            end
+        else
+            windower.add_to_chat(207,'[XivBar] Usage: /xivbar skin ffxi | ffxiv  (current: '..settings.skin..')')
+        end
     elseif command=='help' or command=='' then
-        windower.add_to_chat(207,'[XivBar] /xivbar setup | show | hide | reset')
+        windower.add_to_chat(207,'[XivBar] /xivbar setup | show | hide | reset | skin ffxi|ffxiv')
     end
 end)
 -- Load
