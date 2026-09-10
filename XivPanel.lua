@@ -12,6 +12,7 @@ end
 function XivBar.new(config)
 local self=setmetatable({},XivBar)
     self.assets=config.assets
+    self.skin_assets=config.skin_assets or config.assets
     self.settings=config.settings
     self.defaults=config.defaults
     self.stats=config.stats or {'hp'}
@@ -30,9 +31,10 @@ local self=setmetatable({},XivBar)
     for _,stat in ipairs(self.stats) do self.stat_enabled[stat]=true end
     self.image_sizes={}
     self.image_objects={}
-    self.image_objects.bg_top=make_image(self.assets,'BgTop.png',BG_SIZES.bg_top.w,BG_SIZES.bg_top.h)
-    self.image_objects.bg_mid=make_image(self.assets,'BgMid.png',BG_SIZES.bg_mid.w,BG_SIZES.bg_mid.h)
-    self.image_objects.bg_bottom=make_image(self.assets,'BgBottom.png',BG_SIZES.bg_bottom.w,BG_SIZES.bg_bottom.h)
+    -- Background images come from the skin-specific folder (ffxi / ffxiv)
+    self.image_objects.bg_top=make_image(self.skin_assets,'BgTop.png',BG_SIZES.bg_top.w,BG_SIZES.bg_top.h)
+    self.image_objects.bg_mid=make_image(self.skin_assets,'BgMid.png',BG_SIZES.bg_mid.w,BG_SIZES.bg_mid.h)
+    self.image_objects.bg_bottom=make_image(self.skin_assets,'BgBottom.png',BG_SIZES.bg_bottom.w,BG_SIZES.bg_bottom.h)
     for key,size in pairs(BG_SIZES) do self.image_sizes[key]=size end
     self.bars={}
     for _,stat in ipairs(self.stats) do
@@ -40,6 +42,7 @@ local self=setmetatable({},XivBar)
         for _,part in ipairs(BAR_PART_ORDER) do
 local size=BAR_PART_SIZES[part]
 local key=stat..'_'..part
+-- Bar parts are shared across skins, so they come from the base assets folder
 local obj=make_image(self.assets,BAR_PART_FILES[part],size.w,size.h)
             self.image_sizes[key]=size
             self.bars[stat][part]=obj
