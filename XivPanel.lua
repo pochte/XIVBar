@@ -187,8 +187,9 @@ local p=self.preview[stat] or {}
     self:set_visible(true)
 end
 function XivBar:reset()
-    self.root_x=self.defaults.pos.x
-    self.root_y=self.defaults.pos.y
+    -- Prefer the currently saved position; use hardcoded defaults only if no saved position exists.
+    self.root_x=(self.settings.pos and self.settings.pos.x) or self.defaults.pos.x
+    self.root_y=(self.settings.pos and self.settings.pos.y) or self.defaults.pos.y
     self.settings.pos.x=self.root_x
     self.settings.pos.y=self.root_y
     self.settings.scale=self.defaults.scale
